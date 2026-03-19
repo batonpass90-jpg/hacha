@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="하차알림 — 졸아도 내릴 역 절대 안 놓치는 앱">
+  <title>하차알림 광고</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #080c14;
+      --surface: #0f1829;
+      --border:  #1a2a3e;
+      --blue:    #3b82f6;
+      --cyan:    #22d3ee;
+      --yellow:  #facc15;
+      --text:    #e8f0ff;
+      --muted:   #4b6a8a;
+      --font-d: 'Black Han Sans', sans-serif;
+      --font-b: 'Noto Sans KR', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── Phone Shell ── */
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 48px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 2px #1a2a3e,
+        0 0 0 4px #0a0e18,
+        0 40px 100px rgba(0,0,0,.8),
+        0 0 80px rgba(34,211,238,.06);
+      font-family: var(--font-b);
+      color: var(--text);
+    }
+
+    /* ── Scenes ── */
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .5s ease, visibility .5s ease;
+    }
+    .scene[aria-hidden="false"] {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* ══ S1 — Hook ══ */
+    #s1 { background: linear-gradient(170deg, #080c14 0%, #0c1624 100%); }
+
+    .tunnel {
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(
+        90deg, transparent, transparent 38px,
+        rgba(20,50,80,.18) 38px, rgba(20,50,80,.18) 40px
+      );
+      animation: tunnelScroll .45s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes tunnelScroll { to { transform: translateX(-40px); } }
+
+    .rail {
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, #1e3a5f 30%, #1e3a5f 70%, transparent);
+      pointer-events: none;
+    }
+
+    .sleepy {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center;
+      animation: sway 2.4s ease-in-out infinite;
+    }
+    @keyframes sway {
+      0%,100% { transform: rotate(-4deg); }
+      50%      { transform: rotate(4deg); }
+    }
+    .sleepy__head {
+      width: 82px; height: 82px;
+      background: #f5c5a3; border-radius: 50%;
+      position: relative;
+      box-shadow: 0 4px 24px rgba(0,0,0,.5);
+    }
+    .sleepy__head::before {
+      content: '';
+      position: absolute;
+      top: 36px; left: 16px; right: 16px; height: 2px;
+      background: repeating-linear-gradient(
+        90deg, #8b5e3c 0, #8b5e3c 10px, transparent 10px, transparent 16px
+      );
+      border-radius: 1px;
+    }
+    .sleepy__head::after {
+      content: '';
+      position: absolute;
+      bottom: 18px; left: 50%; transform: translateX(-50%);
+      width: 20px; height: 8px;
+      border: 2px solid #8b5e3c;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+    }
+    .sleepy__body {
+      width: 68px; height: 58px;
+      background: #1e3a5f;
+      border-radius: 10px 10px 0 0;
+      margin-top: -4px;
+    }
+    .zzz-group { position: absolute; top: -16px; right: -14px; }
+    .zzz {
+      position: absolute;
+      font-style: italic; font-weight: 900;
+      color: var(--cyan); opacity: 0;
+      animation: floatZ 2.1s ease-out infinite;
+    }
+    .zzz:nth-child(1) { top: 0;    right: 0;    font-size: 22px; animation-delay: 0s; }
+    .zzz:nth-child(2) { top: -20px; right: 12px; font-size: 16px; animation-delay: .65s; }
+    .zzz:nth-child(3) { top: -38px; right: 26px; font-size: 11px; animation-delay: 1.3s; }
+    @keyframes floatZ {
+      0%   { opacity: 0; transform: translateY(0) scale(.5); }
+      25%  { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-28px) scale(1.2); }
+    }
+
+    .s1-text {
+      position: relative; z-index: 2;
+      margin-top: 36px; text-align: center;
+    }
+    .s1-eyebrow {
+      font-size: 11px; letter-spacing: 3px; color: var(--muted);
+      margin-bottom: 10px;
+      animation: fadeUp .6s .3s both;
+    }
+    .s1-headline {
+      font-family: var(--font-d); font-size: 34px; line-height: 1.25;
+      animation: fadeUp .6s .5s both;
+    }
+    .s1-headline mark {
+      background: none; color: var(--cyan);
+      display: block; font-size: 40px;
+    }
+    .s1-badge {
+      display: inline-block; margin-top: 18px;
+      padding: 6px 18px; border-radius: 999px;
+      background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.35);
+      color: #fca5a5; font-size: 13px; font-weight: 700;
+      animation: fadeUp .6s .7s both;
+    }
+
+    .ticker {
+      position: absolute;
+      bottom: 60px; left: 0; right: 0;
+      overflow: hidden; height: 34px;
+    }
+    .ticker__inner {
+      display: flex; width: max-content;
+      animation: tickerScroll 10s linear infinite;
+    }
+    @keyframes tickerScroll { to { transform: translateX(-50%); } }
+    .ticker__item {
+      display: flex; align-items: center; gap: 7px;
+      padding: 0 20px; height: 34px;
+      font-size: 12px; color: #2a4a6a;
+      border-right: 1px solid #12253a;
+      white-space: nowrap;
+    }
+    .ticker__item--on { color: #4b7ba8; }
+    .ticker__dot {
+      width: 6px; height: 6px;
+      border-radius: 50%; background: currentColor; flex-shrink: 0;
+    }
+
+    /* ══ S2 — 앱 UI ══ */
+    #s2 { background: #060910; }
+
+    .mockup {
+      width: 236px;
+      background: #0d1117;
+      border-radius: 32px;
+      border: 1.5px solid #1a2030;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px #080b12,
+        0 28px 70px rgba(0,0,0,.55),
+        0 0 50px rgba(34,211,238,.05);
+    }
+    .mockup__notch {
+      width: 72px; height: 20px;
+      background: #060910;
+      border-radius: 0 0 14px 14px;
+      margin: 0 auto;
+    }
+    .mockup__body {
+      padding: 8px 14px 14px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .minimap {
+      height: 130px;
+      background: #0c1a28;
+      border-radius: 14px;
+      position: relative; overflow: hidden;
+    }
+    .minimap__line {
+      position: absolute;
+      top: 50%; left: 0; right: 0; height: 3px;
+      background: var(--blue);
+      transform: translateY(-50%);
+    }
+    .minimap__station {
+      position: absolute; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      background: #1a3050; border: 2px solid var(--blue);
+    }
+    .minimap__station--done   { background: var(--blue); }
+    .minimap__station--here   { background: var(--cyan); border-color: var(--cyan); width: 15px; height: 15px; box-shadow: 0 0 10px var(--cyan); }
+    .minimap__station--target { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+    .minimap__train {
+      position: absolute; top: 50%;
+      transform: translateY(-58%); font-size: 18px;
+      animation: trainSlide 3s ease-in-out infinite alternate;
+    }
+    @keyframes trainSlide { from { left: 52%; } to { left: 62%; } }
+    .minimap__label {
+      position: absolute;
+      top: calc(50% + 13px);
+      transform: translateX(-50%);
+      font-size: 8px; color: #3a5a7a; white-space: nowrap;
+    }
+    .minimap__label--target { color: var(--yellow); font-weight: 700; }
+
+    .info-card {
+      background: #111827;
+      border-radius: 12px;
+      padding: 11px 13px;
+      border: 1px solid #1e2d40;
+    }
+    .info-card__row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .info-card__label { font-size: 9px; color: var(--muted); margin-bottom: 2px; }
+    .info-card__val   { font-size: 12px; font-weight: 700; }
+    .info-card__val--cyan   { color: var(--cyan); }
+    .info-card__val--yellow { color: var(--yellow); }
+    .info-card__toggle-row {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-top: 9px;
+    }
+    .info-card__toggle-label { font-size: 10px; color: #6b8aaa; }
+
+    .toggle {
+      width: 34px; height: 19px;
+      background: var(--blue); border-radius: 999px;
+      position: relative;
+      box-shadow: 0 0 8px rgba(59,130,246,.4);
+    }
+    .toggle__knob {
+      position: absolute;
+      top: 3px; right: 3px;
+      width: 13px; height: 13px;
+      border-radius: 50%; background: #fff;
+    }
+
+    .notif {
+      position: absolute;
+      top: 36px; left: 10px; right: 10px;
+      background: rgba(15,24,40,.95);
+      border: 1px solid rgba(34,211,238,.25);
+      border-radius: 12px;
+      padding: 9px 11px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 28px rgba(0,0,0,.4), 0 0 18px rgba(34,211,238,.08);
+      z-index: 10;
+      opacity: 0; transform: translateY(-6px);
+      transition: opacity .4s cubic-bezier(.34,1.56,.64,1),
+                  transform .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .notif--visible { opacity: 1; transform: translateY(0); }
+    .notif__header {
+      display: flex; align-items: center; gap: 5px; margin-bottom: 3px;
+    }
+    .notif__app  { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+    .notif__time { font-size: 9px; color: #243040; margin-left: auto; }
+    .notif__title{ font-size: 11px; font-weight: 700; }
+    .notif__body { font-size: 9px; color: #6b8aaa; margin-top: 1px; }
+
+    .s2-caption {
+      margin-top: 22px; text-align: center;
+      animation: fadeUp .5s .2s both;
+    }
+    .s2-caption p { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .s2-caption h2 { font-family: var(--font-d); font-size: 20px; }
+    .s2-caption h2 span { color: var(--cyan); }
+
+    /* ══ S3 — 알림 연출 ══ */
+    #s3 {
+      background: radial-gradient(ellipse 70% 60% at 50% 40%, #0c1e32 0%, #060910 100%);
+    }
+    .alarm-stage { display: flex; flex-direction: column; align-items: center; }
+
+    .alarm-icon {
+      width: 116px; height: 116px;
+      background: linear-gradient(135deg, #0d2540, #17355c);
+      border-radius: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 54px; position: relative;
+      box-shadow: 0 20px 56px rgba(0,0,0,.5);
+      animation: iconBounce .65s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes iconBounce {
+      from { transform: scale(.25) rotate(-18deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .alarm-icon::before,
+    .alarm-icon::after {
+      content: '';
+      position: absolute;
+      border: 2px solid rgba(34,211,238,.35);
+      animation: ripple 2s ease-out infinite;
+    }
+    .alarm-icon::before { inset: -10px; border-radius: 38px; animation-delay: .5s; }
+    .alarm-icon::after  { inset: -22px; border-radius: 50px; animation-delay: 1s; }
+    @keyframes ripple {
+      0%   { opacity: .8; transform: scale(1); }
+      100% { opacity: 0;  transform: scale(1.12); }
+    }
+
+    .alarm-station {
+      margin-top: 34px; text-align: center;
+      animation: fadeUp .55s .4s both;
+    }
+    .alarm-station__eyebrow {
+      font-size: 10px; letter-spacing: 4px;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .alarm-station__name {
+      font-family: var(--font-d); font-size: 54px; line-height: 1;
+    }
+    .alarm-station__name span { color: var(--cyan); }
+    .alarm-station__badge {
+      display: inline-block; margin-top: 10px;
+      padding: 4px 14px; border-radius: 999px;
+      background: rgba(59,130,246,.15);
+      border: 1px solid rgba(59,130,246,.35);
+      font-size: 11px; color: #60a5fa; font-weight: 700;
+    }
+
+    .alarm-copy {
+      margin-top: 26px; text-align: center;
+      animation: fadeUp .55s .6s both;
+    }
+    .alarm-copy p { font-size: 15px; color: #8aaac8; line-height: 1.7; }
+    .alarm-copy strong { color: var(--text); }
+
+    .vibrate {
+      display: flex; gap: 6px; margin-top: 22px;
+      animation: fadeUp .55s .8s both;
+    }
+    .vibrate__dot {
+      width: 8px; height: 8px;
+      border-radius: 50%; background: var(--cyan);
+      animation: vbounce .55s ease-in-out infinite alternate;
+    }
+    .vibrate__dot:nth-child(2) { animation-delay: .1s; }
+    .vibrate__dot:nth-child(3) { animation-delay: .2s; }
+    .vibrate__dot:nth-child(4) { animation-delay: .3s; }
+    .vibrate__dot:nth-child(5) { animation-delay: .4s; }
+    @keyframes vbounce {
+      from { transform: scaleY(.35); opacity: .35; }
+      to   { transform: scaleY(1.5); opacity: 1; }
+    }
+
+    /* ══ S4 — CTA ══ */
+    #s4 {
+      background: linear-gradient(160deg, #060a10 0%, #091420 100%);
+    }
+    .cta { text-align: center; padding: 0 28px; }
+    .cta__icon {
+      font-size: 52px; display: block; margin-bottom: 18px;
+      animation: floatIcon 2.2s ease-in-out infinite alternate;
+    }
+    @keyframes floatIcon {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-12px); }
+    }
+    .cta__headline {
+      font-family: var(--font-d); font-size: 34px; line-height: 1.25;
+      margin-bottom: 10px;
+      animation: fadeUp .5s .2s both;
+    }
+    .cta__headline em { font-style: normal; color: var(--cyan); }
+    .cta__sub {
+      font-size: 14px; color: var(--muted); margin-bottom: 34px;
+      animation: fadeUp .5s .4s both;
+    }
+    .cta__btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, #2563eb, #0891b2);
+      color: #fff; border: none; border-radius: 16px;
+      padding: 17px 34px;
+      font-size: 16px; font-weight: 900; font-family: var(--font-b);
+      letter-spacing: .3px; cursor: pointer;
+      box-shadow: 0 8px 32px rgba(37,99,235,.4), 0 0 60px rgba(8,145,178,.12);
+      animation: fadeUp .5s .6s both, btnPulse 2.2s 1.8s ease-in-out infinite alternate;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .cta__btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(37,99,235,.5); }
+    .cta__btn:focus-visible {
+      outline: 2px solid var(--cyan); outline-offset: 3px;
+    }
+    @keyframes btnPulse {
+      from { box-shadow: 0 8px 32px rgba(37,99,235,.4), 0 0 40px rgba(8,145,178,.1); }
+      to   { box-shadow: 0 8px 44px rgba(37,99,235,.6), 0 0 80px rgba(8,145,178,.28); }
+    }
+    .cta__badges {
+      display: flex; gap: 12px; justify-content: center;
+      margin-top: 20px; list-style: none;
+      animation: fadeUp .5s .8s both;
+    }
+    .cta__badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 10px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.09);
+      font-size: 11px; color: #6b8aaa;
+    }
+
+    /* ── Progress Nav ── */
+    .progress {
+      position: absolute;
+      bottom: 28px; left: 24px; right: 24px;
+      display: flex; gap: 6px; z-index: 50;
+    }
+    .progress__btn {
+      flex: 1; height: 3px; padding: 0; border: none;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden; cursor: pointer;
+    }
+    .progress__btn:focus-visible {
+      outline: 2px solid var(--cyan); outline-offset: 4px;
+    }
+    .progress__fill {
+      height: 100%; border-radius: 999px;
+      background: var(--cyan); width: 0%;
+    }
+    .progress__btn--done .progress__fill {
+      width: 100%; background: rgba(34,211,238,.35);
+      transition: none;
+    }
+
+    /* ── 공통 ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── 음소거 버튼 ── */
+    .mute-btn {
+      position: absolute;
+      top: 20px; right: 20px;
+      z-index: 60;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .15s;
+      backdrop-filter: blur(6px);
+    }
+    .mute-btn:hover  { background: rgba(255,255,255,.12); }
+    .mute-btn:active { transform: scale(.9); }
+    .mute-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="phone">
+
+    <!-- ══ SCENE 1 ══ -->
+    <section class="scene" id="s1" aria-label="공감 훅" aria-hidden="true">
+      <div class="tunnel" aria-hidden="true"></div>
+      <div class="rail"   aria-hidden="true"></div>
+
+      <figure class="sleepy" aria-label="지하철에서 졸고 있는 승객">
+        <div class="sleepy__head">
+          <span class="zzz-group" aria-hidden="true">
+            <span class="zzz">z</span>
+            <span class="zzz">z</span>
+            <span class="zzz">z</span>
+          </span>
+        </div>
+        <div class="sleepy__body"></div>
+        <figcaption class="visually-hidden">지하철에서 졸고 있는 승객 일러스트</figcaption>
+      </figure>
+
+      <div class="s1-text">
+        <p class="s1-eyebrow">SUBWAY LIFE PROBLEM</p>
+        <h1 class="s1-headline">졸다가<mark>또 지나쳤지?</mark></h1>
+        <p class="s1-badge">😴 두 정거장 더 간 사람 손↑</p>
+      </div>
+
+      <div class="ticker" aria-hidden="true">
+        <div class="ticker__inner" id="tickerInner"></div>
+      </div>
+    </section>
+
+    <!-- ══ SCENE 2 ══ -->
+    <section class="scene" id="s2" aria-label="앱 화면 시연" aria-hidden="true">
+      <article class="mockup" aria-label="하차알림 앱 화면 목업">
+        <div class="mockup__notch" aria-hidden="true"></div>
+
+        <div class="notif" id="notifPopup" role="status" aria-live="polite">
+          <header class="notif__header">
+            <span aria-hidden="true">🔔</span>
+            <span class="notif__app">하차알림</span>
+            <time class="notif__time">방금</time>
+          </header>
+          <p class="notif__title">⚠️ 곧 내릴 역이에요!</p>
+          <p class="notif__body">다음 역: 선릉 · 1분 후 도착</p>
+        </div>
+
+        <div class="mockup__body">
+          <figure class="minimap" aria-label="지하철 노선 지도">
+            <div class="minimap__line" aria-hidden="true"></div>
+            <div class="minimap__station minimap__station--done"   style="left:15%"  aria-hidden="true"></div>
+            <div class="minimap__station minimap__station--done"   style="left:37%"  aria-hidden="true"></div>
+            <div class="minimap__station minimap__station--here"   style="left:59%"  aria-label="현재 위치: 교대역"></div>
+            <div class="minimap__station minimap__station--target" style="left:77%"  aria-label="목적지: 선릉역"></div>
+            <div class="minimap__station"                          style="left:91%"  aria-hidden="true"></div>
+            <div class="minimap__train" aria-hidden="true">🚇</div>
+            <figcaption class="minimap__label"           style="left:15%">역삼</figcaption>
+            <figcaption class="minimap__label"           style="left:37%">강남</figcaption>
+            <figcaption class="minimap__label"           style="left:59%">교대</figcaption>
+            <figcaption class="minimap__label minimap__label--target" style="left:77%">선릉 📍</figcaption>
+            <figcaption class="minimap__label"           style="left:91%">삼성</figcaption>
+          </figure>
+
+          <div class="info-card">
+            <div class="info-card__row">
+              <div>
+                <p class="info-card__label">현재 위치</p>
+                <p class="info-card__val info-card__val--cyan">교대역</p>
+              </div>
+              <div style="text-align:right">
+                <p class="info-card__label">하차 목적지</p>
+                <p class="info-card__val info-card__val--yellow">선릉역 🎯</p>
+              </div>
+            </div>
+            <div class="info-card__toggle-row">
+              <span class="info-card__toggle-label">🔔 하차 알림 켜짐</span>
+              <div class="toggle" role="switch" aria-checked="true" aria-label="하차 알림 스위치">
+                <div class="toggle__knob"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="s2-caption">
+        <p>내릴 역 전에 딱 알려주는</p>
+        <h2>스마트 <span>하차알림</span> 🚇</h2>
+      </div>
+    </section>
+
+    <!-- ══ SCENE 3 ══ -->
+    <section class="scene" id="s3" aria-label="알림 도착 연출" aria-hidden="true">
+      <div class="alarm-stage">
+        <div class="alarm-icon" role="img" aria-label="알림 벨 아이콘">🔔</div>
+        <div class="alarm-station">
+          <p class="alarm-station__eyebrow">NEXT STATION</p>
+          <p class="alarm-station__name"><span>선릉</span>역</p>
+          <span class="alarm-station__badge">2호선 · 1분 후 도착</span>
+        </div>
+        <div class="alarm-copy">
+          <p><strong>졸아도 괜찮아요</strong><br>내릴 역 오기 전에<br>알아서 깨워드릴게요</p>
+        </div>
+        <div class="vibrate" aria-hidden="true">
+          <div class="vibrate__dot"></div>
+          <div class="vibrate__dot"></div>
+          <div class="vibrate__dot"></div>
+          <div class="vibrate__dot"></div>
+          <div class="vibrate__dot"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ SCENE 4 ══ -->
+    <section class="scene" id="s4" aria-label="앱 설치 유도" aria-hidden="true">
+      <div class="cta">
+        <span class="cta__icon" aria-hidden="true">🚇</span>
+        <h2 class="cta__headline">한 번 쓰면<br><em>절대 못 끊음</em></h2>
+        <p class="cta__sub">지하철 인생 편해짐 체험하세요</p>
+        <button class="cta__btn" type="button">🔔 지금 바로 무료 설치</button>
+        <ul class="cta__badges">
+          <li class="cta__badge">🍎 App Store</li>
+          <li class="cta__badge">★★★★★ 4.9</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── 음소거 버튼 ── -->
+    <button class="mute-btn" id="muteBtn" type="button" aria-label="소리 끄기" aria-pressed="false">🔊</button>
+
+    <!-- ── 프로그레스 내비게이션 ── -->
+    <nav class="progress" aria-label="광고 진행 단계">
+      <button class="progress__btn" id="prog0" type="button" aria-label="1단계 — 공감 훅"><div class="progress__fill" id="fill0"></div></button>
+      <button class="progress__btn" id="prog1" type="button" aria-label="2단계 — 앱 화면"><div class="progress__fill" id="fill1"></div></button>
+      <button class="progress__btn" id="prog2" type="button" aria-label="3단계 — 알림 연출"><div class="progress__fill" id="fill2"></div></button>
+      <button class="progress__btn" id="prog3" type="button" aria-label="4단계 — 설치 유도"><div class="progress__fill" id="fill3"></div></button>
+    </nav>
+
+  </main>
+
+  <script>
+    'use strict';
+
+    /* ══════════════════════════════════════
+       Web Audio API — 사운드 엔진
+       외부 파일 없이 오실레이터로 합성
+    ══════════════════════════════════════ */
+    let audioCtx = null;
+
+    function getCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    /* 기본 유틸: 오실레이터 + 게인 */
+    function osc(ctx, type, freq, startT, endT, gainPeak, gainEnd) {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freq, startT);
+      g.gain.setValueAtTime(0, startT);
+      g.gain.linearRampToValueAtTime(gainPeak, startT + 0.01);
+      g.gain.exponentialRampToValueAtTime(gainEnd || 0.001, endT);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start(startT);
+      o.stop(endT);
+    }
+
+    /* 주파수 슬라이드 */
+    function oscSlide(ctx, type, freqFrom, freqTo, startT, endT, gainPeak) {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(freqFrom, startT);
+      o.frequency.linearRampToValueAtTime(freqTo, endT);
+      g.gain.setValueAtTime(0, startT);
+      g.gain.linearRampToValueAtTime(gainPeak, startT + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, endT);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start(startT);
+      o.stop(endT);
+    }
+
+    /* 노이즈 버퍼 생성 */
+    function makeNoise(ctx, duration) {
+      const bufLen = ctx.sampleRate * duration;
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+      return buf;
+    }
+
+    /* ── S1: 지하철 달리는 소리 (로우 럼블 + 레일 클릭) ── */
+    function playTrainAmbience() {
+      const ctx = getCtx();
+      const t = ctx.currentTime;
+
+      // 저음 엔진 럼블
+      osc(ctx, 'sawtooth', 55,  t,      t+2.8, 0.06, 0.001);
+      osc(ctx, 'sawtooth', 58,  t+0.02, t+2.8, 0.04, 0.001);
+
+      // 레일 클릭 리듬 (4번 반복)
+      [0, 0.42, 0.84, 1.26, 1.68, 2.10, 2.52].forEach(offset => {
+        const ts = t + offset;
+        osc(ctx, 'square', 120, ts, ts + 0.06, 0.08, 0.001);
+        osc(ctx, 'square', 80,  ts + 0.02, ts + 0.08, 0.05, 0.001);
+      });
+
+      // 고주파 선로 마찰음 (노이즈 필터)
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = makeNoise(ctx, 2.8);
+      noiseSource.loop = false;
+      const bpf = ctx.createBiquadFilter();
+      bpf.type = 'bandpass';
+      bpf.frequency.value = 1200;
+      bpf.Q.value = 0.8;
+      const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0.03, t);
+      ng.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+      noiseSource.connect(bpf);
+      bpf.connect(ng);
+      ng.connect(ctx.destination);
+      noiseSource.start(t);
+      noiseSource.stop(t + 2.8);
+    }
+
+    /* ── S2: 앱 UI 등장음 (부드러운 스와이프 + 알림 핑) ── */
+    function playAppUI() {
+      const ctx = getCtx();
+      const t = ctx.currentTime;
+
+      // 스와이프 업 사운드
+      oscSlide(ctx, 'sine', 300, 600, t, t + 0.25, 0.12);
+
+      // 알림 팝업 딩 (1.3초 뒤 — notif 팝업과 동기화)
+      setTimeout(() => {
+        const ctx2 = getCtx();
+        const t2 = ctx2.currentTime;
+        // 맑은 알림 핑
+        osc(ctx2, 'sine',     1046.5, t2,        t2 + 0.8,  0.22, 0.001); // C6
+        osc(ctx2, 'sine',     1318.5, t2 + 0.05, t2 + 0.6,  0.14, 0.001); // E6
+        osc(ctx2, 'sine',     1568,   t2 + 0.10, t2 + 0.5,  0.10, 0.001); // G6
+        // 2차 짧은 핑
+        osc(ctx2, 'sine',     2093,   t2 + 0.18, t2 + 0.45, 0.08, 0.001); // C7
+      }, 1300);
+    }
+
+    /* ── S3: 알림 경보음 (진동 버즈 + 벨 차임) ── */
+    function playAlarmChime() {
+      const ctx = getCtx();
+      const t = ctx.currentTime;
+
+      // 진동 느낌 버즈
+      [0, 0.08, 0.16].forEach(offset => {
+        osc(ctx, 'square', 80, t + offset, t + offset + 0.06, 0.18, 0.001);
+      });
+
+      // 차임 멜로디 (G4 → B4 → D5 → G5)
+      const chime = [
+        { freq: 392,   delay: 0.25, dur: 1.0, gain: 0.18 },
+        { freq: 493.9, delay: 0.45, dur: 0.9, gain: 0.15 },
+        { freq: 587.3, delay: 0.65, dur: 0.8, gain: 0.12 },
+        { freq: 784,   delay: 0.80, dur: 1.2, gain: 0.20 },
+      ];
+      chime.forEach(({ freq, delay, dur, gain }) => {
+        const ts = t + delay;
+        osc(ctx, 'sine', freq, ts, ts + dur, gain, 0.001);
+        // 배음 추가
+        osc(ctx, 'sine', freq * 2, ts, ts + dur * 0.6, gain * 0.3, 0.001);
+      });
+
+      // 하이 스파클
+      osc(ctx, 'sine', 2637, t + 0.82, t + 1.6, 0.07, 0.001); // E7
+    }
+
+    /* ── S4: CTA 팡파르 (밝고 에너지 넘치는 상승 코드) ── */
+    function playFanfare() {
+      const ctx = getCtx();
+      const t = ctx.currentTime;
+
+      // 상승 아르페지오 (C4 → E4 → G4 → C5 → E5)
+      const arp = [
+        { freq: 261.6, delay: 0.0,  dur: 0.5 },
+        { freq: 329.6, delay: 0.08, dur: 0.5 },
+        { freq: 392.0, delay: 0.16, dur: 0.5 },
+        { freq: 523.3, delay: 0.24, dur: 0.8 },
+        { freq: 659.3, delay: 0.34, dur: 1.0 },
+      ];
+      arp.forEach(({ freq, delay, dur }) => {
+        const ts = t + delay;
+        osc(ctx, 'sine',     freq,     ts, ts + dur, 0.18, 0.001);
+        osc(ctx, 'triangle', freq * 2, ts, ts + dur * 0.7, 0.06, 0.001);
+      });
+
+      // 마무리 코드 울림
+      [523.3, 659.3, 784].forEach((freq, i) => {
+        const ts = t + 0.45 + i * 0.02;
+        osc(ctx, 'sine', freq, ts, ts + 1.6, 0.12, 0.001);
+      });
+
+      // 반짝이는 스파클
+      osc(ctx, 'sine', 2093, t + 0.46, t + 0.9, 0.06, 0.001);
+      osc(ctx, 'sine', 2637, t + 0.50, t + 0.9, 0.04, 0.001);
+    }
+
+    const SOUND_FNS = [playTrainAmbience, playAppUI, playAlarmChime, playFanfare];
+
+    /* ══════════════════════════════════════
+       Web Speech API — 나래이션
+    ══════════════════════════════════════ */
+    const NARRATIONS = [
+      {
+        text: '지하철에서 졸다가, 또 내릴 역을 지나쳐 본 적 있으신가요?',
+        delay: 400,
+        rate: 0.92,
+        pitch: 1.0,
+      },
+      {
+        text: '하차알림이 내릴 역을 미리 감지하고, 딱 맞춰 알림을 보내드려요.',
+        delay: 600,
+        rate: 0.90,
+        pitch: 1.0,
+      },
+      {
+        text: '선릉역 도착 1분 전! 이제 절대 지나칠 일 없어요.',
+        delay: 300,
+        rate: 0.88,
+        pitch: 1.05,
+      },
+      {
+        text: '한 번 써보면 절대 못 끊어요. 지금 바로 무료로 설치하세요!',
+        delay: 500,
+        rate: 0.93,
+        pitch: 1.08,
+      },
+    ];
+
+    let narrTimer = null;
+    let currentUtterance = null;
+
+    function speakNarration(idx) {
+      if (!('speechSynthesis' in window)) return;
+      if (muted) return;
+
+      // 진행 중인 음성 중단
+      window.speechSynthesis.cancel();
+      clearTimeout(narrTimer);
+
+      const { text, delay, rate, pitch } = NARRATIONS[idx];
+
+      narrTimer = setTimeout(() => {
+        if (muted) return;
+
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.lang  = 'ko-KR';
+        utt.rate  = rate;
+        utt.pitch = pitch;
+        utt.volume = 0.95;
+
+        // 한국어 음성 우선 선택
+        const voices = window.speechSynthesis.getVoices();
+        const koVoice = voices.find(v => v.lang === 'ko-KR' && v.localService)
+                     || voices.find(v => v.lang === 'ko-KR')
+                     || voices.find(v => v.lang.startsWith('ko'));
+        if (koVoice) utt.voice = koVoice;
+
+        currentUtterance = utt;
+        window.speechSynthesis.speak(utt);
+      }, delay);
+    }
+
+    /* voices 비동기 로드 대응 */
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices(); // 캐시 트리거
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    /* ── 음소거 토글 ── */
+    let muted = false;
+    const muteBtn = document.getElementById('muteBtn');
+    if (muteBtn) {
+      muteBtn.addEventListener('click', () => {
+        muted = !muted;
+        muteBtn.textContent = muted ? '🔇' : '🔊';
+        muteBtn.setAttribute('aria-label', muted ? '소리 켜기' : '소리 끄기');
+        muteBtn.setAttribute('aria-pressed', String(muted));
+        if (muted) {
+          window.speechSynthesis && window.speechSynthesis.cancel();
+        }
+      });
+    }
+
+    /* ══════════════════════════════════════
+       티커 초기화
+    ══════════════════════════════════════ */
+    (function() {
+      const inner = document.getElementById('tickerInner');
+      if (!inner) return;
+      const stations = [
+        { name: '강남', passed: false },
+        { name: '역삼', passed: true  },
+        { name: '선릉', passed: true  },
+        { name: '삼성', passed: false },
+        { name: '종합운동장', passed: false },
+        { name: '잠실새내', passed: false },
+        { name: '잠실', passed: false },
+      ];
+      [0, 1].forEach(() => {
+        stations.forEach(({ name, passed }) => {
+          const span = document.createElement('span');
+          span.className = 'ticker__item' + (passed ? ' ticker__item--on' : '');
+          span.innerHTML = `<span class="ticker__dot" aria-hidden="true"></span>${name}`;
+          inner.appendChild(span);
+        });
+      });
+    }());
+
+    /* ══════════════════════════════════════
+       씬 컨트롤러
+    ══════════════════════════════════════ */
+    const SCENE_IDS = ['s1', 's2', 's3', 's4'];
+    const PROG_IDS  = ['prog0', 'prog1', 'prog2', 'prog3'];
+    const FILL_IDS  = ['fill0', 'fill1', 'fill2', 'fill3'];
+    const DURATIONS = [3200, 4200, 3600, 5000];
+
+    const scenes = SCENE_IDS.map(id => document.getElementById(id));
+    const progs  = PROG_IDS.map(id  => document.getElementById(id));
+    const fills  = FILL_IDS.map(id  => document.getElementById(id));
+    const notif  = document.getElementById('notifPopup');
+
+    let current    = 0;
+    let autoTimer  = null;
+    let notifTimer = null;
+
+    function showScene(idx) {
+      scenes.forEach((el, i) => el.setAttribute('aria-hidden', String(i !== idx)));
+
+      progs.forEach((btn, i) => {
+        btn.classList.remove('progress__btn--done');
+        fills[i].style.transition = 'none';
+        fills[i].style.width = i < idx ? '100%' : '0%';
+        if (i < idx) btn.classList.add('progress__btn--done');
+      });
+
+      if (notif) {
+        notif.classList.remove('notif--visible');
+        clearTimeout(notifTimer);
+        if (idx === 1) {
+          notifTimer = setTimeout(() => notif.classList.add('notif--visible'), 1300);
+        }
+      }
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          fills[idx].style.transition = `width ${DURATIONS[idx]}ms linear`;
+          fills[idx].style.width = '100%';
+        });
+      });
+
+      // 사운드 + 나래이션 재생
+      if (!muted) {
+        try { SOUND_FNS[idx](); } catch(e) { /* 오디오 미지원 무시 */ }
+        speakNarration(idx);
+      }
+
+      clearTimeout(autoTimer);
+      autoTimer = setTimeout(() => {
+        current = (current + 1) % scenes.length;
+        showScene(current);
+      }, DURATIONS[idx]);
+    }
+
+    progs.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        current = i;
+        showScene(current);
+      });
+    });
+
+    /* 첫 클릭(사용자 제스처)으로 AudioContext 활성화 후 시작 */
+    let started = false;
+    function startOnce() {
+      if (started) return;
+      started = true;
+      document.removeEventListener('click', startOnce);
+      document.removeEventListener('touchstart', startOnce);
+      showScene(0);
+    }
+
+    /* 이미 페이지가 포커스된 상태라면 바로 시작 시도 */
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'running') {
+        started = true;
+        showScene(0);
+      } else {
+        audioCtx.resume().then(() => { started = true; showScene(0); });
+      }
+    } catch(e) {
+      // 오디오 없이 시작
+      started = true;
+      showScene(0);
+    }
+    document.addEventListener('click', startOnce);
+    document.addEventListener('touchstart', startOnce);
+  </script>
+</body>
+</html>
