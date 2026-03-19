@@ -819,28 +819,28 @@
     ══════════════════════════════════════ */
     const NARRATIONS = [
       {
-        text: '또 지나쳤어?',
+        text: '딴거하다 또 지나쳤어요?',
         delay: 400,
         rate: 0.88,
         pitch: 1.0,
       },
       {
-        text: '딱 알려줘요.',
+        text: '내릴역을 딱 알려줘요.',
         delay: 600,
         rate: 0.88,
         pitch: 1.0,
       },
       {
-        text: '선릉역 도착!',
+        text: '졸아도 괜찮아요.',
         delay: 300,
         rate: 0.86,
-        pitch: 1.05,
+        pitch: 1.0,
       },
       {
-        text: '지금 설치!',
+        text: '매일 출퇴근이 편해져요.',
         delay: 500,
         rate: 0.90,
-        pitch: 1.1,
+        pitch: 1.0,
       },
     ];
 
@@ -866,12 +866,25 @@
         utt.pitch = pitch;
         utt.volume = 0.95;
 
-        // 한국어 음성 우선 선택
+        // 남성 한국어 음성 우선 선택
         const voices = window.speechSynthesis.getVoices();
-        const koVoice = voices.find(v => v.lang === 'ko-KR' && v.localService)
-                     || voices.find(v => v.lang === 'ko-KR')
-                     || voices.find(v => v.lang.startsWith('ko'));
+        const koVoices = voices.filter(v => v.lang === 'ko-KR' || v.lang.startsWith('ko'));
+
+        // 남성 목소리 키워드로 필터
+        const maleKeywords = ['male', 'man', 'hyun', 'junho', 'daniel', 'google 한국의 남', 'yuna'];
+        const maleVoice = koVoices.find(v =>
+          maleKeywords.some(k => v.name.toLowerCase().includes(k))
+        );
+
+        // 남성 없으면 pitch를 낮춰서 남성처럼
+        const koVoice = maleVoice
+          || koVoices.find(v => v.localService)
+          || koVoices[0];
+
         if (koVoice) utt.voice = koVoice;
+
+        // 남성 목소리 못 찾으면 pitch 낮게 조정
+        if (!maleVoice) utt.pitch = 0.7;
 
         currentUtterance = utt;
         window.speechSynthesis.speak(utt);
